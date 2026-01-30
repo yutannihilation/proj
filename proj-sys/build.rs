@@ -36,7 +36,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             // Tell cargo to tell rustc to link the system proj
             // shared library.
             println!("cargo:rustc-link-search=native={:?}", pk.link_paths[0]);
-            println!("cargo:rustc-link-lib=proj");
+            println!("cargo:rustc-link-lib=static=proj");
 
             pk.include_paths[0].clone()
         })
