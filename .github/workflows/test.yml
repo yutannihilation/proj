@@ -205,6 +205,9 @@ jobs:
       - run: brew install proj
       - run: cargo test
 
+  # Build PROJ from the bundled source to enable ASAN. In order to link against
+  # the ASAN-enabled library, "-Z sanitizer=address" flag needs to be passed to
+  # the Rust compiler. So, this job requires the nightly toolchain.
   proj-sys-ubuntu-asan:
     name: proj-sys ubuntu asan
     if: "!contains(github.event.head_commit.message, '[skip ci]')"
