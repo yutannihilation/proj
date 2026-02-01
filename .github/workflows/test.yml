@@ -213,7 +213,7 @@ jobs:
     container:
       image: ghcr.io/georust/proj-ci:proj-${{ needs.compute.outputs.LIBPROJ_VERSION }}-rust-${{ needs.compute.outputs.RUST_LATEST }}
     env:
-      RUSTFLAGS: "-Z sanitizer=address"
+      CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_RUSTFLAGS: "-Z sanitizer=address"
       ASAN_OPTIONS: "detect_leaks=0"
     steps:
       - name: Checkout repository
