@@ -213,64 +213,9 @@ jobs:
     container:
       image: ghcr.io/georust/proj-ci:proj-${{ needs.compute.outputs.LIBPROJ_VERSION }}-rust-${{ needs.compute.outputs.RUST_LATEST }}
     env:
-      RUSTFLAGS: "-Z sanitizer=address"
       ASAN_OPTIONS: "detect_leaks=0"
-      RUSTC_WRAPPER: /tmp/rustc-asan-wrapper
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@nightly
-      - name: Install rustc wrapper for proc-macros
-        shell: bash
-        run: |
-          cat > /tmp/rustc-asan-wrapper <<'EOF'
-          #!/usr/bin/env bash
-          set -euo pipefail
-          rustc="$1"
-          shift
-
-          is_proc_macro=0
-          next_is_crate_type=0
-          for arg in "$@"; do
-            if [ "$next_is_crate_type" = "1" ]; then
-              if [ "$arg" = "proc-macro" ]; then
-                is_proc_macro=1
-              fi
-              next_is_crate_type=0
-              continue
-            fi
-            case "$arg" in
-              --crate-type=proc-macro) is_proc_macro=1 ;;
-              --crate-type) next_is_crate_type=1 ;;
-            esac
-          done
-
-          if [ "$is_proc_macro" = "1" ]; then
-            filtered=()
-            skip_next=0
-            for arg in "$@"; do
-              if [ "$skip_next" = "1" ]; then
-                if [ "$arg" = "sanitizer=address" ]; then
-                  skip_next=0
-                  continue
-                fi
-                filtered+=("-Z" "$arg")
-                skip_next=0
-                continue
-              fi
-              if [ "$arg" = "-Z" ]; then
-                skip_next=1
-                continue
-              fi
-              if [ "$arg" = "-Zsanitizer=address" ]; then
-                continue
-              fi
-              filtered+=("$arg")
-            done
-            exec "$rustc" "${filtered[@]}"
-          fi
-
-          exec "$rustc" "$@"
-          EOF
-          chmod +x /tmp/rustc-asan-wrapper
-      - run: cargo +nightly test --target x86_64-unknown-linux-gnu
+      - run: RUSTFLAGS='-Z sanitizer=address' cargo +nightly test --target x86_64-unknown-linux-gnu
